@@ -15,25 +15,24 @@
     flake-utils.lib.eachSystem ["x86_64-linux"] (system: let
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [ self.overlay ];
+        overlays = [ self.overlays.default ];
       };
 
     in {
-      packages = {
+      packages = rec {
+        default = ansible2nix;
         ansible2nix = pkgs.ansible2nix;
         test = pkgs.callPackage ./tests/test.nix {};
       };
 
-      defaultPackage = self.packages.${system}.ansible2nix;
-
-      devShell = self.defaultPackage.${system}.overrideAttrs(oa: {
+      devShells.default = self.packages.${system}.default.overrideAttrs(oa: {
         postShellHook = ''
           export PYTHONPATH="$PWD:$PYTHONPATH"
         '';
       });
     }) // {
 
-      overlay = final: prev:
+      overlays.default = final: prev:
         let
           inherit (poetry2nix.lib.mkPoetry2Nix { pkgs = final; }) mkPoetryApplication;
         in {
