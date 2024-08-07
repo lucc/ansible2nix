@@ -8,9 +8,10 @@
       url = "github:teto/flake-compat/support-packages";
       flake = false;
     };
+    poetry2nix.url = "github:nix-community/poetry2nix";
   };
 
-  outputs = { self, nixpkgs, flake-utils, ... }:
+  outputs = { self, nixpkgs, flake-utils, poetry2nix, ... }:
     flake-utils.lib.eachSystem ["x86_64-linux"] (system: let
       pkgs = import nixpkgs {
         inherit system;
@@ -32,11 +33,14 @@
       });
     }) // {
 
-    overlay = final: prev: {
-      ansible2nix = final.poetry2nix.mkPoetryApplication {
-        projectDir = ./.;
-        buildInputs = [ ];
-      };
+      overlay = final: prev:
+        let
+          inherit (poetry2nix.lib.mkPoetry2Nix { pkgs = final; }) mkPoetryApplication;
+        in {
+          ansible2nix = mkPoetryApplication {
+            projectDir = ./.;
+            buildInputs = [ ];
+          };
 
       ansibleGenerateCollection = final.callPackage ./ansible.nix {};
     };
