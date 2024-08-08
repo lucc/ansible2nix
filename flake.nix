@@ -36,7 +36,6 @@
         '';
       });
     }) // {
-
       overlays.default = final: prev:
         let
           inherit (poetry2nix.lib.mkPoetry2Nix { pkgs = final; }) mkPoetryApplication;
@@ -46,7 +45,7 @@
             buildInputs = [ ];
           };
 
-      ansibleGenerateCollection = final.callPackage ./ansible.nix {};
+          ansibleGenerateCollection = final.callPackage ./ansible.nix {};
+        };
     };
-  };
 }
