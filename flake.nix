@@ -3,16 +3,21 @@
 
   inputs = {
     flake-utils.url = "github:numtide/flake-utils";
+    flake-utils.inputs.systems.follows = "systems";
     nixpkgs.url = "github:NixOS/nixpkgs";
     flake-compat = {
       url = "github:teto/flake-compat/support-packages";
       flake = false;
     };
     poetry2nix.url = "github:nix-community/poetry2nix";
+    poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
+    poetry2nix.inputs.flake-utils.follows = "flake-utils";
+    poetry2nix.inputs.systems.follows = "systems";
+    systems.url = "github:nix-systems/x86_64-linux";
   };
 
-  outputs = { self, nixpkgs, flake-utils, poetry2nix, ... }:
-    flake-utils.lib.eachSystem ["x86_64-linux"] (system: let
+  outputs = { self, nixpkgs, flake-utils, poetry2nix, systems, ... }:
+    flake-utils.lib.eachSystem (import systems) (system: let
       pkgs = import nixpkgs {
         inherit system;
         overlays = [ self.overlays.default ];
