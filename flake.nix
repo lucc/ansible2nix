@@ -23,7 +23,6 @@
       packages = rec {
         default = ansible2nix;
         ansible2nix = pkgs.ansible2nix;
-        test = pkgs.callPackage ./tests/test.nix {};
       };
 
       devShells.default = self.packages.${system}.default.overrideAttrs(oa: {
@@ -31,6 +30,7 @@
           export PYTHONPATH="$PWD:$PYTHONPATH"
         '';
       });
+      checks.test = pkgs.callPackage ./tests/test.nix {};
     }) // {
       overlays.default = final: prev:
         let

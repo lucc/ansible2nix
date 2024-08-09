@@ -18,15 +18,9 @@ stdenv.mkDerivation {
   src = ./.;
 
   buildPhase = ":";
-  installPhase = ''
-    touch $out
-  '';
+  installPhase = "mkdir $out";
 
   propagatedBuildInputs = [
     myPythonEnv
   ];
-
-  # shellHook = ''
-  #   source <(novops handler)
-  # '';
 }
