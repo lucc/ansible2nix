@@ -5,10 +5,6 @@
     flake-utils.url = "github:numtide/flake-utils";
     flake-utils.inputs.systems.follows = "systems";
     nixpkgs.url = "github:NixOS/nixpkgs";
-    flake-compat = {
-      url = "github:teto/flake-compat/support-packages";
-      flake = false;
-    };
     poetry2nix.url = "github:nix-community/poetry2nix";
     poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
     poetry2nix.inputs.flake-utils.follows = "flake-utils";
