@@ -65,14 +65,15 @@ def main(arguments: list[str] | None = None) -> None:
         "--debug",
         "-d",
         choices=LOG_LEVELS.keys(),
+        type=str.upper,
         default=logging.getLevelName(logging.ERROR),
-        help="More verbose output, can be repeated to be even more "
-        " verbose such as '-dddd'",
+        help="set the log level",
     )
 
     args = parser.parse_args(arguments)
 
     log.setLevel(LOG_LEVELS[args.debug])
+    log.debug("parsed command line: %s", args)
 
     with open(args.requirements) as fd:
         content = yaml.safe_load(fd)
