@@ -2,7 +2,6 @@ import argparse
 import logging
 import subprocess
 import sys
-from typing import List
 
 import yaml
 
@@ -50,7 +49,7 @@ def gen_nix_expression(collection):
 #     pass
 
 
-def main(arguments: List[str] = None):
+def main(arguments: list[str] | None = None):
     if not arguments:
         arguments = sys.argv[1:]
 
