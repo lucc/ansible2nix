@@ -16,12 +16,12 @@ LOG_LEVELS = {
 }
 
 
-def gen_galaxy_url(name, version):
+def gen_galaxy_url(name: str, version: str) -> str:
     nname = name.replace(".", "-")
     return f"https://galaxy.ansible.com/download/{nname}-{version}.tar.gz"
 
 
-def gen_nix_expression(collection):
+def gen_nix_expression(collection: dict[str, str]) -> str:
     log.debug("Generating nix code")
     name = collection["name"]
     version = collection["version"]
@@ -49,7 +49,7 @@ def gen_nix_expression(collection):
 #     pass
 
 
-def main(arguments: list[str] | None = None):
+def main(arguments: list[str] | None = None) -> None:
     if not arguments:
         arguments = sys.argv[1:]
 
