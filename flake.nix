@@ -19,16 +19,10 @@
     ...
   }: let
     project = pyproject-nix.lib.project.loadPyproject {projectRoot = ./.;};
-    metadata = project.pyproject.tool.poetry;
     mkAnsible2nix = python: let
       attrs = project.renderers.buildPythonPackage {inherit python;};
     in
-      python.pkgs.buildPythonApplication ({
-          pname = metadata.name;
-          inherit (metadata) version;
-          nativeBuildInputs = [python.pkgs.pyyaml];
-        }
-        // attrs);
+      python.pkgs.buildPythonApplication attrs;
   in
     flake-utils.lib.eachSystem (import systems) (system: let
       pkgs = import nixpkgs {
