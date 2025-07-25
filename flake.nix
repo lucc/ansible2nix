@@ -5,44 +5,55 @@
     flake-utils.url = "github:numtide/flake-utils";
     flake-utils.inputs.systems.follows = "systems";
     nixpkgs.url = "github:NixOS/nixpkgs";
-    poetry2nix.url = "github:nix-community/poetry2nix";
-    poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
-    poetry2nix.inputs.flake-utils.follows = "flake-utils";
-    poetry2nix.inputs.systems.follows = "systems";
+    pyproject-nix.url = "github:pyproject-nix/pyproject.nix";
+    pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
     systems.url = "github:nix-systems/x86_64-linux";
   };
 
-  outputs = { self, nixpkgs, flake-utils, poetry2nix, systems, ... }:
+  outputs = {
+    self,
+    nixpkgs,
+    flake-utils,
+    pyproject-nix,
+    systems,
+    ...
+  }: let
+    project = pyproject-nix.lib.project.loadPyproject {projectRoot = ./.;};
+    metadata = project.pyproject.tool.poetry;
+    mkAnsible2nix = python: let
+      attrs = project.renderers.buildPythonPackage {inherit python;};
+    in
+      python.pkgs.buildPythonApplication ({
+          pname = metadata.name;
+          inherit (metadata) version;
+          nativeBuildInputs = [python.pkgs.pyyaml];
+        }
+        // attrs);
+  in
     flake-utils.lib.eachSystem (import systems) (system: let
       pkgs = import nixpkgs {
         inherit system;
-        overlays = [ self.overlays.default ];
+        overlays = [self.overlays.default];
       };
-      ansible2nix = pkgs.ansible2nix;
+      ansible2nix = mkAnsible2nix pkgs.python3;
     in {
       packages = {
         inherit ansible2nix;
         default = ansible2nix;
       };
 
-      devShells.default = ansible2nix.overrideAttrs(oa: {
+      devShells.default = ansible2nix.overrideAttrs (oa: {
         postShellHook = ''
           export PYTHONPATH="$PWD:$PYTHONPATH"
         '';
         nativeBuildInputs = oa.nativeBuildInputs ++ [pkgs.poetry];
       });
       checks.test = pkgs.callPackage ./tests/test.nix {};
-    }) // {
-      overlays.default = final: prev:
-        let
-          inherit (poetry2nix.lib.mkPoetry2Nix { pkgs = final; }) mkPoetryApplication;
-        in {
-          ansible2nix = mkPoetryApplication {
-            projectDir = ./.;
-            buildInputs = [ ];
-          };
-
-          ansibleGenerateCollection = final.callPackage ./ansible.nix {};
-        };
+    })
+    // {
+      overlays.default = final: prev: {
+        ansible2nix = mkAnsible2nix final.python3;
+        ansibleGenerateCollection = final.callPackage ./ansible.nix {};
+      };
     };
 }
