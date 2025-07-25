@@ -18,17 +18,18 @@
         inherit system;
         overlays = [ self.overlays.default ];
       };
-
+      ansible2nix = pkgs.ansible2nix;
     in {
-      packages = rec {
+      packages = {
+        inherit ansible2nix;
         default = ansible2nix;
-        ansible2nix = pkgs.ansible2nix;
       };
 
-      devShells.default = self.packages.${system}.default.overrideAttrs(oa: {
+      devShells.default = ansible2nix.overrideAttrs(oa: {
         postShellHook = ''
           export PYTHONPATH="$PWD:$PYTHONPATH"
         '';
+        nativeBuildInputs = oa.nativeBuildInputs ++ [pkgs.poetry];
       });
       checks.test = pkgs.callPackage ./tests/test.nix {};
     }) // {
